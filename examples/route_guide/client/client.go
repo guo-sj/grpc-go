@@ -56,6 +56,18 @@ func printFeature(client pb.RouteGuideClient, point *pb.Point) {
 	log.Println(feature)
 }
 
+// runAddFeature add the feature for the given point.
+func runAddFeature(client pb.RouteGuideClient, point *pb.Point) {
+	log.Printf("Adding feature for point (%d, %d)", point.Latitude, point.Longitude)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	result, err := client.AddFeature(ctx, point)
+	if err != nil {
+		log.Fatalf("%v.AddFeature(_) = _, %v: ", client, err)
+	}
+	log.Println(result)
+}
+
 // printFeatures lists all the features within the given bounding Rectangle.
 func printFeatures(client pb.RouteGuideClient, rect *pb.Rectangle) {
 	log.Printf("Looking for features within %v", rect)
@@ -112,9 +124,9 @@ func runRouteChat(client pb.RouteGuideClient) {
 		{Location: &pb.Point{Latitude: 0, Longitude: 1}, Message: "First message"},
 		{Location: &pb.Point{Latitude: 0, Longitude: 2}, Message: "Second message"},
 		{Location: &pb.Point{Latitude: 0, Longitude: 3}, Message: "Third message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 1}, Message: "Fourth message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 2}, Message: "Fifth message"},
-		{Location: &pb.Point{Latitude: 0, Longitude: 3}, Message: "Sixth message"},
+		{Location: &pb.Point{Latitude: 0, Longitude: 4}, Message: "Fourth message"},
+		{Location: &pb.Point{Latitude: 0, Longitude: 5}, Message: "Fifth message"},
+		{Location: &pb.Point{Latitude: 0, Longitude: 6}, Message: "Sixth message"},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -176,20 +188,21 @@ func main() {
 	client := pb.NewRouteGuideClient(conn)
 
 	// Looking for a valid feature
-	printFeature(client, &pb.Point{Latitude: 409146138, Longitude: -746188906})
+	printFeature(client, &pb.Point{Latitude: 12345, Longitude: 67890})
 
 	// Feature missing.
-	printFeature(client, &pb.Point{Latitude: 0, Longitude: 0})
-
-	// Looking for features between 40, -75 and 42, -73.
-	printFeatures(client, &pb.Rectangle{
+	//printFeature(client, &pb.Point{Latitude: 0, Longitude: 0}) // Looking for features between 40, -75 and 42, -73.
+	/* printFeatures(client, &pb.Rectangle{
 		Lo: &pb.Point{Latitude: 400000000, Longitude: -750000000},
 		Hi: &pb.Point{Latitude: 420000000, Longitude: -730000000},
-	})
+	}) */
 
 	// RecordRoute
-	runRecordRoute(client)
+	//runRecordRoute(client)
 
 	// RouteChat
-	runRouteChat(client)
+	//runRouteChat(client)
+
+	// Add Feature
+	runAddFeature(client, &pb.Point{Latitude: 12345, Longitude: 67890})
 }

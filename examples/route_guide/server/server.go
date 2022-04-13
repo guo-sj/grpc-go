@@ -132,14 +132,16 @@ func (s *routeGuideServer) RouteChat(stream pb.RouteGuide_RouteChatServer) error
 			return err
 		}
 		key := serialize(in.Location)
+		log.Printf("Recv key: %q\n", key)
 
 		s.mu.Lock()
 		s.routeNotes[key] = append(s.routeNotes[key], in)
 		// Note: this copy prevents blocking other clients while serving this one.
 		// We don't need to do a deep copy, because elements in the slice are
 		// insert-only and never modified.
-		rn := make([]*pb.RouteNote, len(s.routeNotes[key]))
-		copy(rn, s.routeNotes[key])
+		//rn := make([]*pb.RouteNote, len(s.routeNotes[key]))
+		//copy(rn, s.routeNotes[key])
+		rn := s.routeNotes[key]
 		s.mu.Unlock()
 
 		for _, note := range rn {
@@ -147,6 +149,7 @@ func (s *routeGuideServer) RouteChat(stream pb.RouteGuide_RouteChatServer) error
 				return err
 			}
 		}
+		log.Printf("key: %v, sent done!\n", key)
 	}
 }
 
@@ -165,6 +168,33 @@ func (s *routeGuideServer) loadFeatures(filePath string) {
 	if err := json.Unmarshal(data, &s.savedFeatures); err != nil {
 		log.Fatalf("Failed to load default features: %v", err)
 	}
+}
+
+func (s *routeGuideServer) AddFeature(ctx context.Context, point *pb.Point) (*pb.Result, error) {
+	if *jsonDBFile == "" {
+		return &pb.Result{
+			Location: point,
+			Result:   "Add feature failed, no DB file is loaded",
+		}, nil
+	}
+	for _, feature := range s.savedFeatures {
+		if proto.Equal(feature.Location, point) {
+			return &pb.Result{
+				Location: point,
+				Result:   "Add feature failed, already have this feature",
+			}, nil
+		}
+	}
+	s.savedFeatures = append(s.savedFeatures, &pb.Feature{Location: point, Name: serialize(point)})
+	data, err := json.Marshal(s.savedFeatures)
+	if err != nil {
+		log.Fatal("Failed to marshal features: %v", err)
+	}
+	if err := ioutil.WriteFile(*jsonDBFile, data, 0644); err != nil {
+		log.Fatal("Failed to save features: %v", err)
+	}
+	s.loadFeatures(*jsonDBFile)
+	return &pb.Result{Location: point, Result: "Add feature successfully"}, nil
 }
 
 func toRadians(num float64) float64 {

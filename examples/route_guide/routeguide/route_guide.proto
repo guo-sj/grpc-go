@@ -31,6 +31,11 @@ service RouteGuide {
   // position.
   rpc GetFeature(Point) returns (Feature) {}
 
+  // A simple RPC
+  // 
+  // Add feature at a a given position.
+  rpc AddFeature(Point) returns (Result) {}
+
   // A server-to-client streaming RPC.
   //
   // Obtains the Features available within the given Rectangle.  Results are
@@ -108,4 +113,11 @@ message RouteSummary {
 
   // The duration of the traversal in seconds.
   int32 elapsed_time = 4;
+}
+
+// Database operation result
+message Result {
+  Point location = 1;
+
+  string result = 2;
 }
