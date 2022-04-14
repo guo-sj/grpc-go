@@ -34,7 +34,7 @@ service RouteGuide {
   // A simple RPC
   // 
   // Add feature at a a given position.
-  rpc AddFeature(Point) returns (Result) {}
+  rpc AddFeature(Feature) returns (Result) {}
 
   // A server-to-client streaming RPC.
   //
@@ -117,7 +117,7 @@ message RouteSummary {
 
 // Database operation result
 message Result {
-  Point location = 1;
+  Feature feature = 1;
 
   string result = 2;
 }

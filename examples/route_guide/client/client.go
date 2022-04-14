@@ -56,17 +56,21 @@ func printFeature(client pb.RouteGuideClient, point *pb.Point) {
 	log.Println(feature)
 }
 
-// runAddFeature add the feature for the given point.
-func runAddFeature(client pb.RouteGuideClient, point *pb.Point) {
-	log.Printf("Adding feature for point (%d, %d)", point.Latitude, point.Longitude)
+// runAddFeature adds the feature for the given point.
+func runAddFeature(client pb.RouteGuideClient, feature *pb.Feature) {
+	log.Printf("Adding feature for point (%d, %d)", feature.Location.Latitude, feature.Location.Longitude)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	result, err := client.AddFeature(ctx, point)
+	result, err := client.AddFeature(ctx, feature)
 	if err != nil {
 		log.Fatalf("%v.AddFeature(_) = _, %v: ", client, err)
 	}
 	log.Println(result)
 }
+
+// runUpdateFeature updates the feature for the given point.
+
+// runDeleteFeature deletes the feature for the given point.
 
 // printFeatures lists all the features within the given bounding Rectangle.
 func printFeatures(client pb.RouteGuideClient, rect *pb.Rectangle) {
@@ -188,7 +192,7 @@ func main() {
 	client := pb.NewRouteGuideClient(conn)
 
 	// Looking for a valid feature
-	printFeature(client, &pb.Point{Latitude: 12345, Longitude: 67890})
+	printFeature(client, &pb.Point{Latitude: 54321, Longitude: 98706})
 
 	// Feature missing.
 	//printFeature(client, &pb.Point{Latitude: 0, Longitude: 0}) // Looking for features between 40, -75 and 42, -73.
@@ -204,5 +208,5 @@ func main() {
 	//runRouteChat(client)
 
 	// Add Feature
-	runAddFeature(client, &pb.Point{Latitude: 12345, Longitude: 67890})
+	runAddFeature(client, &pb.Feature{Name: "NUAA, Nanjing, JiangSu", Location: &pb.Point{Latitude: 13224766, Longitude: 3733335}})
 }

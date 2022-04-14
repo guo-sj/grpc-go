@@ -32,7 +32,7 @@ type RouteGuideClient interface {
 	// A simple RPC
 	//
 	// Add feature at a a given position.
-	AddFeature(ctx context.Context, in *Point, opts ...grpc.CallOption) (*Result, error)
+	AddFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error)
 	// A server-to-client streaming RPC.
 	//
 	// Obtains the Features available within the given Rectangle.  Results are
@@ -69,7 +69,7 @@ func (c *routeGuideClient) GetFeature(ctx context.Context, in *Point, opts ...gr
 	return out, nil
 }
 
-func (c *routeGuideClient) AddFeature(ctx context.Context, in *Point, opts ...grpc.CallOption) (*Result, error) {
+func (c *routeGuideClient) AddFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error) {
 	out := new(Result)
 	err := c.cc.Invoke(ctx, "/routeguide.RouteGuide/AddFeature", in, out, opts...)
 	if err != nil {
@@ -189,7 +189,7 @@ type RouteGuideServer interface {
 	// A simple RPC
 	//
 	// Add feature at a a given position.
-	AddFeature(context.Context, *Point) (*Result, error)
+	AddFeature(context.Context, *Feature) (*Result, error)
 	// A server-to-client streaming RPC.
 	//
 	// Obtains the Features available within the given Rectangle.  Results are
@@ -217,7 +217,7 @@ type UnimplementedRouteGuideServer struct {
 func (UnimplementedRouteGuideServer) GetFeature(context.Context, *Point) (*Feature, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFeature not implemented")
 }
-func (UnimplementedRouteGuideServer) AddFeature(context.Context, *Point) (*Result, error) {
+func (UnimplementedRouteGuideServer) AddFeature(context.Context, *Feature) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFeature not implemented")
 }
 func (UnimplementedRouteGuideServer) ListFeatures(*Rectangle, RouteGuide_ListFeaturesServer) error {
@@ -261,7 +261,7 @@ func _RouteGuide_GetFeature_Handler(srv interface{}, ctx context.Context, dec fu
 }
 
 func _RouteGuide_AddFeature_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Point)
+	in := new(Feature)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func _RouteGuide_AddFeature_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/routeguide.RouteGuide/AddFeature",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouteGuideServer).AddFeature(ctx, req.(*Point))
+		return srv.(RouteGuideServer).AddFeature(ctx, req.(*Feature))
 	}
 	return interceptor(ctx, in, info, handler)
 }

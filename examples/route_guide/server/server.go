@@ -170,23 +170,23 @@ func (s *routeGuideServer) loadFeatures(filePath string) {
 	}
 }
 
-func (s *routeGuideServer) AddFeature(ctx context.Context, point *pb.Point) (*pb.Result, error) {
+func (s *routeGuideServer) AddFeature(ctx context.Context, feature *pb.Feature) (*pb.Result, error) {
 	if *jsonDBFile == "" {
 		return &pb.Result{
-			Location: point,
-			Result:   "Add feature failed, no DB file is loaded",
+			Feature: feature,
+			Result:  "Add feature failed, no DB file is loaded",
 		}, nil
 	}
-	for _, feature := range s.savedFeatures {
-		if proto.Equal(feature.Location, point) {
+	for _, f := range s.savedFeatures {
+		if proto.Equal(f.Location, feature.Location) {
 			return &pb.Result{
-				Location: point,
-				Result:   "Add feature failed, already have this feature",
+				Feature: feature,
+				Result:  "Add feature failed, already have this feature",
 			}, nil
 		}
 	}
-	s.savedFeatures = append(s.savedFeatures, &pb.Feature{Location: point, Name: serialize(point)})
-	data, err := json.Marshal(s.savedFeatures)
+	s.savedFeatures = append(s.savedFeatures, feature)
+	data, err := json.MarshalIndent(s.savedFeatures, "", "\t")
 	if err != nil {
 		log.Fatal("Failed to marshal features: %v", err)
 	}
@@ -194,7 +194,7 @@ func (s *routeGuideServer) AddFeature(ctx context.Context, point *pb.Point) (*pb
 		log.Fatal("Failed to save features: %v", err)
 	}
 	s.loadFeatures(*jsonDBFile)
-	return &pb.Result{Location: point, Result: "Add feature successfully"}, nil
+	return &pb.Result{Feature: feature, Result: "Add feature successfully"}, nil
 }
 
 func toRadians(num float64) float64 {
