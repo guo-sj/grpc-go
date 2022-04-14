@@ -29,12 +29,22 @@ service RouteGuide {
   //
   // A feature with an empty name is returned if there's no feature at the given
   // position.
-  rpc GetFeature(Point) returns (Feature) {}
+  rpc GetFeature(Point) returns (Result) {}
 
   // A simple RPC
   // 
   // Add feature at a a given position.
   rpc AddFeature(Feature) returns (Result) {}
+
+  // A simple RPC
+  // 
+  // Update feature at a a given position.
+  rpc UpdateFeature(Feature) returns (Result) {}
+
+  // A simple RPC
+  // 
+  // Delete feature at a a given position.
+  rpc DeleteFeature(Feature) returns (Result) {}
 
   // A server-to-client streaming RPC.
   //

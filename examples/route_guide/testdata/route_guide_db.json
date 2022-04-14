@@ -676,12 +676,5 @@
 			"latitude": 54321,
 			"longitude": 98760
 		}
-	},
-	{
-		"name": "NUAA, Nanjing, JiangSu",
-		"location": {
-			"latitude": 13224766,
-			"longitude": 3733335
-		}
 	}
 ]

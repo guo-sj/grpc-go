@@ -49,11 +49,11 @@ func printFeature(client pb.RouteGuideClient, point *pb.Point) {
 	log.Printf("Getting feature for point (%d, %d)", point.Latitude, point.Longitude)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	feature, err := client.GetFeature(ctx, point)
+	result, err := client.GetFeature(ctx, point)
 	if err != nil {
 		log.Fatalf("%v.GetFeatures(_) = _, %v: ", client, err)
 	}
-	log.Println(feature)
+	log.Println(result)
 }
 
 // runAddFeature adds the feature for the given point.
@@ -69,8 +69,28 @@ func runAddFeature(client pb.RouteGuideClient, feature *pb.Feature) {
 }
 
 // runUpdateFeature updates the feature for the given point.
+func runUpdateFeature(client pb.RouteGuideClient, feature *pb.Feature) {
+	log.Printf("Update feature for point (%d, %d)", feature.Location.Latitude, feature.Location.Longitude)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	result, err := client.UpdateFeature(ctx, feature)
+	if err != nil {
+		log.Fatalf("%v.UpdateFeature(_) = _, %v: ", client, err)
+	}
+	log.Println(result)
+}
 
 // runDeleteFeature deletes the feature for the given point.
+func runDeleteFeature(client pb.RouteGuideClient, feature *pb.Feature) {
+	log.Printf("Delete feature for point (%d, %d)", feature.Location.Latitude, feature.Location.Longitude)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	result, err := client.DeleteFeature(ctx, feature)
+	if err != nil {
+		log.Fatalf("%v.DeleteFeature(_) = _, %v: ", client, err)
+	}
+	log.Println(result)
+}
 
 // printFeatures lists all the features within the given bounding Rectangle.
 func printFeatures(client pb.RouteGuideClient, rect *pb.Rectangle) {
@@ -208,5 +228,13 @@ func main() {
 	//runRouteChat(client)
 
 	// Add Feature
-	runAddFeature(client, &pb.Feature{Name: "NUAA, Nanjing, JiangSu", Location: &pb.Point{Latitude: 13224766, Longitude: 3733335}})
+	//runAddFeature(client, &pb.Feature{Name: "NUAA, Nanjing, JiangSu", Location: &pb.Point{Latitude: 13224766, Longitude: 3733335}})
+
+	// Update Feature
+	//runUpdateFeature(client, &pb.Feature{Name: "NUAA, Nanjing, JiangSu, updated version", Location: &pb.Point{Latitude: 13224766, Longitude: 3733335}})
+
+	//printFeature(client, &pb.Point{Latitude: 13224766, Longitude: 3733335})
+	// Delete Feature
+	runDeleteFeature(client, &pb.Feature{Name: "NUAA, Nanjing, JiangSu, updated version", Location: &pb.Point{Latitude: 13224766, Longitude: 3733335}})
+	printFeature(client, &pb.Point{Latitude: 13224766, Longitude: 3733335})
 }

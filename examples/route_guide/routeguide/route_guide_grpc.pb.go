@@ -28,11 +28,19 @@ type RouteGuideClient interface {
 	//
 	// A feature with an empty name is returned if there's no feature at the given
 	// position.
-	GetFeature(ctx context.Context, in *Point, opts ...grpc.CallOption) (*Feature, error)
+	GetFeature(ctx context.Context, in *Point, opts ...grpc.CallOption) (*Result, error)
 	// A simple RPC
 	//
 	// Add feature at a a given position.
 	AddFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error)
+	// A simple RPC
+	//
+	// Update feature at a a given position.
+	UpdateFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error)
+	// A simple RPC
+	//
+	// Delete feature at a a given position.
+	DeleteFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error)
 	// A server-to-client streaming RPC.
 	//
 	// Obtains the Features available within the given Rectangle.  Results are
@@ -60,8 +68,8 @@ func NewRouteGuideClient(cc grpc.ClientConnInterface) RouteGuideClient {
 	return &routeGuideClient{cc}
 }
 
-func (c *routeGuideClient) GetFeature(ctx context.Context, in *Point, opts ...grpc.CallOption) (*Feature, error) {
-	out := new(Feature)
+func (c *routeGuideClient) GetFeature(ctx context.Context, in *Point, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
 	err := c.cc.Invoke(ctx, "/routeguide.RouteGuide/GetFeature", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -72,6 +80,24 @@ func (c *routeGuideClient) GetFeature(ctx context.Context, in *Point, opts ...gr
 func (c *routeGuideClient) AddFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error) {
 	out := new(Result)
 	err := c.cc.Invoke(ctx, "/routeguide.RouteGuide/AddFeature", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routeGuideClient) UpdateFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := c.cc.Invoke(ctx, "/routeguide.RouteGuide/UpdateFeature", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routeGuideClient) DeleteFeature(ctx context.Context, in *Feature, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := c.cc.Invoke(ctx, "/routeguide.RouteGuide/DeleteFeature", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -185,11 +211,19 @@ type RouteGuideServer interface {
 	//
 	// A feature with an empty name is returned if there's no feature at the given
 	// position.
-	GetFeature(context.Context, *Point) (*Feature, error)
+	GetFeature(context.Context, *Point) (*Result, error)
 	// A simple RPC
 	//
 	// Add feature at a a given position.
 	AddFeature(context.Context, *Feature) (*Result, error)
+	// A simple RPC
+	//
+	// Update feature at a a given position.
+	UpdateFeature(context.Context, *Feature) (*Result, error)
+	// A simple RPC
+	//
+	// Delete feature at a a given position.
+	DeleteFeature(context.Context, *Feature) (*Result, error)
 	// A server-to-client streaming RPC.
 	//
 	// Obtains the Features available within the given Rectangle.  Results are
@@ -214,11 +248,17 @@ type RouteGuideServer interface {
 type UnimplementedRouteGuideServer struct {
 }
 
-func (UnimplementedRouteGuideServer) GetFeature(context.Context, *Point) (*Feature, error) {
+func (UnimplementedRouteGuideServer) GetFeature(context.Context, *Point) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFeature not implemented")
 }
 func (UnimplementedRouteGuideServer) AddFeature(context.Context, *Feature) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFeature not implemented")
+}
+func (UnimplementedRouteGuideServer) UpdateFeature(context.Context, *Feature) (*Result, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFeature not implemented")
+}
+func (UnimplementedRouteGuideServer) DeleteFeature(context.Context, *Feature) (*Result, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFeature not implemented")
 }
 func (UnimplementedRouteGuideServer) ListFeatures(*Rectangle, RouteGuide_ListFeaturesServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListFeatures not implemented")
@@ -274,6 +314,42 @@ func _RouteGuide_AddFeature_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RouteGuideServer).AddFeature(ctx, req.(*Feature))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RouteGuide_UpdateFeature_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Feature)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouteGuideServer).UpdateFeature(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/routeguide.RouteGuide/UpdateFeature",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouteGuideServer).UpdateFeature(ctx, req.(*Feature))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RouteGuide_DeleteFeature_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Feature)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouteGuideServer).DeleteFeature(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/routeguide.RouteGuide/DeleteFeature",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouteGuideServer).DeleteFeature(ctx, req.(*Feature))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -365,6 +441,14 @@ var RouteGuide_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddFeature",
 			Handler:    _RouteGuide_AddFeature_Handler,
+		},
+		{
+			MethodName: "UpdateFeature",
+			Handler:    _RouteGuide_UpdateFeature_Handler,
+		},
+		{
+			MethodName: "DeleteFeature",
+			Handler:    _RouteGuide_DeleteFeature_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

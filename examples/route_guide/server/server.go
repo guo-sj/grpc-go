@@ -62,14 +62,14 @@ type routeGuideServer struct {
 }
 
 // GetFeature returns the feature at the given point.
-func (s *routeGuideServer) GetFeature(ctx context.Context, point *pb.Point) (*pb.Feature, error) {
+func (s *routeGuideServer) GetFeature(ctx context.Context, point *pb.Point) (*pb.Result, error) {
 	for _, feature := range s.savedFeatures {
 		if proto.Equal(feature.Location, point) {
-			return feature, nil
+			return &pb.Result{Feature: feature, Result: "Get feature successfully"}, nil
 		}
 	}
 	// No feature was found, return an unnamed feature
-	return &pb.Feature{Location: point}, nil
+	return &pb.Result{Feature: &pb.Feature{Location: point}, Result: "Get feature failed, no feature is found"}, nil
 }
 
 // ListFeatures lists all features contained within the given bounding Rectangle.
@@ -170,6 +170,7 @@ func (s *routeGuideServer) loadFeatures(filePath string) {
 	}
 }
 
+// AddFeature adds the given feature
 func (s *routeGuideServer) AddFeature(ctx context.Context, feature *pb.Feature) (*pb.Result, error) {
 	if *jsonDBFile == "" {
 		return &pb.Result{
@@ -188,13 +189,79 @@ func (s *routeGuideServer) AddFeature(ctx context.Context, feature *pb.Feature) 
 	s.savedFeatures = append(s.savedFeatures, feature)
 	data, err := json.MarshalIndent(s.savedFeatures, "", "\t")
 	if err != nil {
-		log.Fatal("Failed to marshal features: %v", err)
+		log.Fatalf("Failed to marshal features: %v", err)
 	}
 	if err := ioutil.WriteFile(*jsonDBFile, data, 0644); err != nil {
-		log.Fatal("Failed to save features: %v", err)
+		log.Fatalf("Failed to save features: %v", err)
 	}
 	s.loadFeatures(*jsonDBFile)
 	return &pb.Result{Feature: feature, Result: "Add feature successfully"}, nil
+}
+
+// UpdateFeature updates the given feature
+func (s *routeGuideServer) UpdateFeature(ctx context.Context, feature *pb.Feature) (r *pb.Result, err error) {
+	if *jsonDBFile == "" {
+		return &pb.Result{
+			Feature: feature,
+			Result:  "Update feature failed, no DB file is loaded",
+		}, nil
+	}
+	r = &pb.Result{}
+	for _, f := range s.savedFeatures {
+		if proto.Equal(f.Location, feature.Location) {
+			f.Name = feature.Name
+			r.Result = "Update successfully" // as a success flag
+			break
+		}
+	}
+	if r.Result == "" { // not found the feature
+		return &pb.Result{
+			Feature: feature,
+			Result:  "Update feature failed, feature not found",
+		}, nil
+	}
+	data, err := json.MarshalIndent(s.savedFeatures, "", "\t")
+	if err != nil {
+		log.Fatalf("Failed to marshal features: %v", err)
+	}
+	if err := ioutil.WriteFile(*jsonDBFile, data, 0644); err != nil {
+		log.Fatalf("Failed to save features: %v", err)
+	}
+	s.loadFeatures(*jsonDBFile)
+	return &pb.Result{Feature: feature, Result: "Update feature successfully"}, nil
+}
+
+// DeleteFeature deletes the given feature
+func (s *routeGuideServer) DeleteFeature(ctx context.Context, feature *pb.Feature) (r *pb.Result, err error) {
+	if *jsonDBFile == "" {
+		return &pb.Result{
+			Feature: feature,
+			Result:  "Delete feature failed, no DB file is loaded",
+		}, nil
+	}
+	r = &pb.Result{}
+	for i, f := range s.savedFeatures {
+		if proto.Equal(f.Location, feature.Location) {
+			copy(s.savedFeatures[i:], s.savedFeatures[i+1:])
+			s.savedFeatures = s.savedFeatures[:len(s.savedFeatures)-1]
+			r.Result = "Delete successfully" // as a success flag
+		}
+	}
+	if r.Result == "" { // not found the feature
+		return &pb.Result{
+			Feature: feature,
+			Result:  "Delete feature failed, feature not found",
+		}, nil
+	}
+	data, err := json.MarshalIndent(s.savedFeatures, "", "\t")
+	if err != nil {
+		log.Fatalf("Failed to marshal features: %v", err)
+	}
+	if err := ioutil.WriteFile(*jsonDBFile, data, 0644); err != nil {
+		log.Fatalf("Failed to save features: %v", err)
+	}
+	s.loadFeatures(*jsonDBFile)
+	return &pb.Result{Feature: feature, Result: "Delete feature successfully"}, nil
 }
 
 func toRadians(num float64) float64 {
